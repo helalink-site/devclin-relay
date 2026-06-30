@@ -1,12 +1,13 @@
 import asyncio
 import websockets
 import logging
+import os
 
 logging.basicConfig(level=logging.INFO)
 
 clients = {}
 
-async def relay(websocket, path):
+async def relay(websocket):
     client_id = id(websocket)
     clients[client_id] = websocket
     logging.info(f"Client connected: {client_id}")
@@ -16,10 +17,10 @@ async def relay(websocket, path):
                 if cid != client_id:
                     try:
                         await client.send(message)
-                    except:
-                        del clients[cid]
+                    except Exception:
+                        clients.pop(cid, None)
     finally:
-        del clients[client_id]
+        clients.pop(client_id, None)
         logging.info(f"Client disconnected: {client_id}")
 
 async def main():
@@ -28,4 +29,5 @@ async def main():
         logging.info(f"Relay running on port {port}")
         await asyncio.Future()
 
-asyncio.run(main())
+if __name__ == "__main__":
+    asyncio.run(main())
